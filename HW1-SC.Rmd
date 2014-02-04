@@ -3,8 +3,6 @@ Shih-Yu Chang: HW1
 1) Step1: Connect to the GEO database 
 ```{r}
 library(GEOmetadb)
-```
-```{r}
 geo_con<-dbConnect(SQLite(),'GEOmetadb.sqlite')
 ```
 
@@ -20,30 +18,13 @@ WHERE gpl.Title LIKE '%Illumina%' AND gse.contact LIKE '%Institute: Yale %'  AND
 
 ```{r}
 library(data.table)
+gse_table = data.table(dbReadTable(geo_con, 'gse'))
+gpl_table = data.table(dbReadTable(geo_con, 'gpl'))
+gse_gpl_table = data.table(dbReadTable(geo_con, 'gse_gpl'))
 ```
 
-Step1-making data tables:
-  1)setting keys for joint1
-```{r}
-setkey(gse.dt, gse)
-setkey(gse_gpl.dt, gse)
-
-```
-  2)first join
-```{r}
-merge1<-merge(gse.dt, gse_gpl.dt)
-```
-  3)setting keys for second join
-```{r}
-setkey(merge1,gpl)
-setkey(gpl.dt,gpl)
-```
-  4)second join
-```{r}
-merge2<-merge(merge1,gpl.dt)
-```
 Step2-Querying
 ```{r}
-merge2[title.x %like% "HCV" & contact.x %like% "Yale"& manufacturer %like% "Illumina",list(gse,gpl,manufacturer,description)]
+merge( merge( (gse_table[like(contact,"Institute: Yale")][like(title, "HCV")]), gse_gpl_table, by = "gse",  suffixes = c(".gse_inner",".gse_gpl") ), gpl_table[like(title, "Illumina")], by = "gpl", suffixes = c(".gse", ".gpl") )[,list(title.gse, gse, gpl, manufacturer, description)]
 
 ```
