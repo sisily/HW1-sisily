@@ -1,0 +1,49 @@
+Shih-Yu Chang: HW1
+=====================================================
+1) Step1: Connect to the GEO database 
+```{r}
+library(GEOmetadb)
+```
+```{r}
+geo_con<-dbConnect(SQLite(),'GEOmetadb.sqlite')
+```
+
+Step2: find the data
+```{r}
+dbGetQuery(geo_con, "SELECT gse.title, gse.gse, gpl.gpl, gpl.manufacturer,gpl.description 
+FROM (gse JOIN gse_gpl ON gse.gse=gse_gpl.gse) j JOIN gpl ON j.gpl=gpl.gpl 
+WHERE gpl.Title LIKE '%Illumina%' AND gse.contact LIKE '%Institute: Yale %'  AND gse.Title LIKE '%HCV%Illumina%' ;")
+```
+
+=====================================================
+2) Convert to the data.table
+
+```{r}
+library(data.table)
+```
+
+Step1-making data tables:
+  1)setting keys for joint1
+```{r}
+setkey(gse.dt, gse)
+setkey(gse_gpl.dt, gse)
+
+```
+  2)first join
+```{r}
+merge1<-merge(gse.dt, gse_gpl.dt)
+```
+  3)setting keys for second join
+```{r}
+setkey(merge1,gpl)
+setkey(gpl.dt,gpl)
+```
+  4)second join
+```{r}
+merge2<-merge(merge1,gpl.dt)
+```
+Step2-Querying
+```{r}
+merge2[title.x %like% "HCV" & contact.x %like% "Yale"& manufacturer %like% "Illumina",list(gse,gpl,manufacturer,description)]
+
+```
