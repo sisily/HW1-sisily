@@ -14,8 +14,8 @@ WHERE gpl.Title LIKE '%Illumina%' AND gse.contact LIKE '%Institute: Yale %'  AND
 ```
 
 =====================================================
-2) Convert to the data.table
-
+2) 
+Step1-Convert to the data.table
 ```{r}
 library(data.table)
 gse_table = data.table(dbReadTable(geo_con, 'gse'))
