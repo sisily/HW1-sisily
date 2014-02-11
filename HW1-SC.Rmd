@@ -28,3 +28,15 @@ Step2-Querying
 merge( merge( (gse_table[like(contact,"Institute: Yale")][like(title, "HCV")]), gse_gpl_table, by = "gse",  suffixes = c(".gse_inner",".gse_gpl") ), gpl_table[like(title, "Illumina")], by = "gpl", suffixes = c(".gse", ".gpl") )[,list(title.gse, gse, gpl, manufacturer, description)]
 
 ```
+
+
+
+Shirley - this looks great. It is well-organized and efficient. You're only getting 1 line of records from the first method, though, and two from the second; I believe they should give the same results. I ended up with two lines of output for both methods of querying. Both lines show up if you remove the %Illumina% from the LIKE command for the gse.Title, as below: 
+
+```{r}
+dbGetQuery(geo_con, "SELECT gse.title, gse.gse, gpl.gpl, gpl.manufacturer,gpl.description 
+FROM (gse JOIN gse_gpl ON gse.gse=gse_gpl.gse) j JOIN gpl ON j.gpl=gpl.gpl 
+WHERE gpl.Title LIKE '%Illumina%' AND gse.contact LIKE '%Institute: Yale %'  AND gse.Title LIKE '%HCV%' ;")
+```
+
+Good job! 
